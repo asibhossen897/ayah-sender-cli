@@ -27,6 +27,9 @@ jobs:
           mkdir -p release
           GOOS=${{ matrix.os == 'windows-latest' && 'windows' || (matrix.os == 'macos-latest' && 'darwin' || 'linux') }} GOARCH=amd64 go build -o release/ayah-sender cmd/ayah-sender-cli/main.go
 
+      - name: List Release Directory
+        run: ls -la release
+
       - name: Upload Release Assets
         uses: actions/upload-artifact@v3
         with:
