@@ -5,7 +5,7 @@ This CLI application allows you to download single or multiple Quranic audio rec
 
 Setup:
 ------
-1. Download the executable from the releases page for your operating system: https://github.com/abdullah-al-aqsa/ayah-sender-cli/releases
+1. Download the executable from the releases page for your operating system: https://github.com/asibhossen897/ayah-sender-cli/releases
 2. Make it executable if you're on linux: `chmod +x ayah-sender*`
 3. Optionally add the executable to your PATH by running `sudo mv ayah-sender* /usr/local/bin/`
 4. If you're on windows, add it to your PATH
