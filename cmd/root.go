@@ -1,19 +1,21 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
-	"github.com/asibhossen897/ayah-sender-cli/internal/audio"
-	"github.com/asibhossen897/ayah-sender-cli/internal/image"
+	"github.com/asibhossen897/ayah-sender-cli/pkg/audio"
+	"github.com/asibhossen897/ayah-sender-cli/pkg/config"
+	"github.com/asibhossen897/ayah-sender-cli/pkg/image"
+	"github.com/asibhossen897/ayah-sender-cli/pkg/logger"
+	"github.com/asibhossen897/ayah-sender-cli/pkg/reciters"
 
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "quran-cli",
+	Use:   "ayah-sender",
 	Short: "A CLI application for Quranic audio and images",
-	Long:  `quran-cli is a command-line interface for downloading Quranic audio recitations and verse images.`,
+	Long:  `ayah-sender is a command-line interface for downloading Quranic audio recitations and verse images.`,
 }
 
 var audioCmd = &cobra.Command{
@@ -26,7 +28,9 @@ var audioCmd = &cobra.Command{
 		chapterNum := args[1]
 		startVerse := args[2]
 		endVerse := args[3]
-		audio.DownloadAudio(reciterID, chapterNum, startVerse, endVerse)
+		if err := audio.DownloadAudio(reciterID, chapterNum, startVerse, endVerse); err != nil {
+			logger.Error("Failed to download audio", "error", err)
+		}
 	},
 }
 
@@ -38,18 +42,49 @@ var imageCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		chapterNum := args[0]
 		verseNum := args[1]
-		image.DownloadImage(chapterNum, verseNum)
+		if err := image.DownloadImage(chapterNum, verseNum); err != nil {
+			logger.Error("Failed to download image", "error", err)
+		}
+	},
+}
+
+var mergeAudioCmd = &cobra.Command{
+	Use:   "merge-audio [reciter_id] [chapter_num] [start_verse] [end_verse]",
+	Short: "Download and merge Quranic audio",
+	Long:  `Download Quranic audio recitations for a specific range of verses and merge them into a single file.`,
+	Args:  cobra.ExactArgs(4),
+	Run: func(cmd *cobra.Command, args []string) {
+		reciterID := args[0]
+		chapterNum := args[1]
+		startVerse := args[2]
+		endVerse := args[3]
+		if err := audio.DownloadAndMergeAudio(reciterID, chapterNum, startVerse, endVerse); err != nil {
+			logger.Error("Failed to download and merge audio", "error", err)
+		}
+	},
+}
+
+var listRecitersCmd = &cobra.Command{
+	Use:   "list-reciters",
+	Short: "List all available reciters",
+	Long:  `Display a table of all available reciters with their IDs and names.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := reciters.DisplayRecitersTable(os.Stdout); err != nil {
+			logger.Error("Failed to display reciters", "error", err)
+		}
 	},
 }
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		logger.Error("Failed to execute root command", "error", err)
 	}
 }
 
 func init() {
+	cobra.OnInitialize(config.InitConfig)
 	rootCmd.AddCommand(audioCmd)
 	rootCmd.AddCommand(imageCmd)
+	rootCmd.AddCommand(mergeAudioCmd)
+	rootCmd.AddCommand(listRecitersCmd)
 }

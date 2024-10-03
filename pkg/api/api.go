@@ -1,12 +1,12 @@
 package api
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
+
+	"github.com/asibhossen897/ayah-sender-cli/pkg/logger"
+	"github.com/asibhossen897/ayah-sender-cli/pkg/reciters"
 )
 
 type Chapter struct {
@@ -17,42 +17,34 @@ type Chapter struct {
 }
 
 func GetReciterName(reciterID string) string {
-	recitersFile := filepath.Join("..", "..", "ayah_sender", "reciters.csv") // Updated path
-	file, err := os.Open(recitersFile)
+	reciters, err := reciters.GetReciters()
 	if err != nil {
-		fmt.Printf("Error opening reciters file: %v\n", err)
-		return ""
-	}
-	defer file.Close()
-
-	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
-	if err != nil {
-		fmt.Printf("Error reading reciters file: %v\n", err)
-		return ""
+		logger.Error("Error getting reciters", "error", err)
+		return reciterID // Return reciterID as fallback
 	}
 
-	for _, record := range records {
-		if record[2] == reciterID {
-			return record[0]
+	for _, r := range reciters {
+		if r.ID == reciterID {
+			return r.FullName // Return FullName instead of Name
 		}
 	}
 
-	return ""
+	logger.Info("Reciter not found, using ID", "reciterID", reciterID)
+	return reciterID // Return reciterID if not found
 }
 
 func GetChapterName(chapterNum string) string {
 	url := fmt.Sprintf("https://api.quran.com/api/v4/chapters/%s", chapterNum)
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Printf("Error fetching chapter info: %v\n", err)
+		logger.Error("Error fetching chapter info", "error", err)
 		return ""
 	}
 	defer resp.Body.Close()
 
 	var chapter Chapter
 	if err := json.NewDecoder(resp.Body).Decode(&chapter); err != nil {
-		fmt.Printf("Error decoding chapter info: %v\n", err)
+		logger.Error("Error decoding chapter info", "error", err)
 		return ""
 	}
 
