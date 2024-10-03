@@ -50,3 +50,25 @@ func GetChapterName(chapterNum string) string {
 
 	return chapter.Chapter.NameSimple
 }
+
+type ChapterInfo struct {
+	Chapter struct {
+		VersesCount int `json:"verses_count"`
+	} `json:"chapter"`
+}
+
+func GetChapterInfo(chapterNum string) (*ChapterInfo, error) {
+	url := fmt.Sprintf("https://api.quran.com/api/v4/chapters/%s", chapterNum)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var chapterInfo ChapterInfo
+	if err := json.NewDecoder(resp.Body).Decode(&chapterInfo); err != nil {
+		return nil, err
+	}
+
+	return &chapterInfo, nil
+}

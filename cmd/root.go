@@ -3,14 +3,16 @@ package cmd
 import (
 	"os"
 
-	"github.com/asibhossen897/ayah-sender-cli/pkg/audio"
 	"github.com/asibhossen897/ayah-sender-cli/pkg/config"
+	"github.com/asibhossen897/ayah-sender-cli/pkg/core"
 	"github.com/asibhossen897/ayah-sender-cli/pkg/image"
 	"github.com/asibhossen897/ayah-sender-cli/pkg/logger"
 	"github.com/asibhossen897/ayah-sender-cli/pkg/reciters"
 
 	"github.com/spf13/cobra"
 )
+
+var ayahSender *core.AyahSender
 
 var rootCmd = &cobra.Command{
 	Use:   "ayah-sender",
@@ -28,7 +30,8 @@ var audioCmd = &cobra.Command{
 		chapterNum := args[1]
 		startVerse := args[2]
 		endVerse := args[3]
-		if err := audio.DownloadAudio(reciterID, chapterNum, startVerse, endVerse); err != nil {
+		outputPath := "" // Add a placeholder for the output path
+		if err := ayahSender.DownloadAudio(reciterID, chapterNum, startVerse, endVerse, outputPath); err != nil {
 			logger.Error("Failed to download audio", "error", err)
 		}
 	},
@@ -42,7 +45,8 @@ var imageCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		chapterNum := args[0]
 		verseNum := args[1]
-		if err := image.DownloadImage(chapterNum, verseNum); err != nil {
+		outputPath := "" // Add a placeholder for the output path
+		if err := image.DownloadImage(chapterNum, verseNum, outputPath); err != nil {
 			logger.Error("Failed to download image", "error", err)
 		}
 	},
@@ -58,7 +62,8 @@ var mergeAudioCmd = &cobra.Command{
 		chapterNum := args[1]
 		startVerse := args[2]
 		endVerse := args[3]
-		if err := audio.DownloadAndMergeAudio(reciterID, chapterNum, startVerse, endVerse); err != nil {
+		outputPath := "" // Add a placeholder for the output path
+		if err := ayahSender.DownloadAndMergeAudio(reciterID, chapterNum, startVerse, endVerse, outputPath); err != nil {
 			logger.Error("Failed to download and merge audio", "error", err)
 		}
 	},
@@ -83,6 +88,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(config.InitConfig)
+	ayahSender = core.NewAyahSender()
 	rootCmd.AddCommand(audioCmd)
 	rootCmd.AddCommand(imageCmd)
 	rootCmd.AddCommand(mergeAudioCmd)

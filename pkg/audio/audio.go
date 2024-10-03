@@ -13,7 +13,7 @@ import (
 	"github.com/asibhossen897/ayah-sender-cli/pkg/logger"
 )
 
-func DownloadAudio(reciterID, chapterNum, startVerse, endVerse string) error {
+func DownloadAudio(reciterID, chapterNum, startVerse, endVerse, downloadPath string) error {
 	baseURL := "https://everyayah.com/data"
 	reciterName := api.GetReciterName(reciterID)
 	chapterName := api.GetChapterName(chapterNum)
@@ -38,9 +38,10 @@ func DownloadAudio(reciterID, chapterNum, startVerse, endVerse string) error {
 		formattedVerse := fmt.Sprintf("%03d", verse)
 		url := fmt.Sprintf("%s/%s/%s%s.mp3", baseURL, reciterName, formattedChapter, formattedVerse)
 		fileName := fmt.Sprintf("%s_Surah_%s(%s)_Ayah%s.mp3", reciterName, chapterName, chapterNum, formattedVerse)
+		filePath := filepath.Join(downloadPath, fileName)
 
 		logger.Info("Downloading audio", "file", fileName, "url", url)
-		if err := downloader.DownloadFile(url, fileName); err != nil {
+		if err := downloader.DownloadFile(url, filePath); err != nil {
 			logger.Error("Failed to download audio", "file", fileName, "error", err)
 		} else {
 			logger.Info("Audio downloaded successfully", "file", fileName)
@@ -50,7 +51,7 @@ func DownloadAudio(reciterID, chapterNum, startVerse, endVerse string) error {
 	return nil
 }
 
-func DownloadAndMergeAudio(reciterID, chapterNum, startVerse, endVerse string) error {
+func DownloadAndMergeAudio(reciterID, chapterNum, startVerse, endVerse, downloadPath string) error {
 	baseURL := "https://everyayah.com/data"
 	reciterName := api.GetReciterName(reciterID)
 	chapterName := api.GetChapterName(chapterNum)
@@ -102,12 +103,13 @@ func DownloadAndMergeAudio(reciterID, chapterNum, startVerse, endVerse string) e
 	}
 
 	outputFileName := fmt.Sprintf("%s_Surah_%s(%s)_Ayah%s-%s.mp3", reciterName, chapterName, chapterNum, startVerse, endVerse)
-	err = mergeAudioFiles(audioData, outputFileName)
+	outputFilePath := filepath.Join(downloadPath, outputFileName)
+	err = mergeAudioFiles(audioData, outputFilePath)
 	if err != nil {
 		return fmt.Errorf("failed to merge audio files: %w", err)
 	}
 
-	logger.Info("Audio files merged successfully", "output", outputFileName)
+	logger.Info("Audio files merged successfully", "output", outputFilePath)
 	return nil
 }
 
