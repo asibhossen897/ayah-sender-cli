@@ -43,8 +43,7 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag: ${{ github.ref }}
-          files: |
-            release/ayah-sender
+          tag_name: ${{ github.ref }}  # Corrected input parameter
+          files: release/ayah-sender
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
