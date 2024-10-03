@@ -28,7 +28,7 @@ jobs:
           GOOS=${{ matrix.os == 'windows-latest' && 'windows' || (matrix.os == 'macos-latest' && 'darwin' || 'linux') }} GOARCH=amd64 go build -o release/ayah-sender cmd/ayah-sender-cli/main.go
 
       - name: Upload Release Assets
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ayah-sender-${{ matrix.os }}
           path: release/ayah-sender
